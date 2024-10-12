@@ -6,10 +6,10 @@ namespace MyTrailerV2.Data
     public class Trailer
     {
         [BsonId]
-        public ObjectId Id { get; private set; }
-        public int TrailerNumber { get; private set; }
-        public bool IsAvailable { get; private set; } = true;
-        public DateTime? RentedUntil { get; private set; }
+        public ObjectId Id { get; set; }
+        public int TrailerNumber { get; set; }
+        public bool IsAvailable { get; set; } = true;
+        public DateTime? RentedUntil { get; set; }
 
         public Trailer(int trailerNumber)
         {

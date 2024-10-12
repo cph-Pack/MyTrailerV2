@@ -10,16 +10,16 @@ namespace MyTrailerV2.Data
         public Trailer Trailer { get; set; }
         public Customer Customer { get; set; }
         public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public RentalType RentalType { get; set; }
         public bool HasInsurance { get; set; }
 
-        public Rental(Trailer trailer, Customer customer, DateTime startTime, DateTime endTime, bool hasInsurance)
+        public Rental(Trailer trailer, Customer customer, DateTime startTime, RentalType rentalType, bool hasInsurance)
         {
 
             this.Trailer = trailer;
             this.Customer = customer;
             this.StartTime = startTime;
-            this.EndTime = endTime;
+            this.RentalType = rentalType;
             this.HasInsurance = hasInsurance;
         }
 

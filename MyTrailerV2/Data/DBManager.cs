@@ -27,25 +27,25 @@ namespace MyTrailerV2.Data
             _billColl = _database.GetCollection<Bill>("bills");
         }
 
-        public void insertBill(Bill bill)
-        {
-            _billColl.InsertOne(bill);
-        }
+        //public void insertBill(Bill bill)
+        //{
+        //    _billColl.InsertOne(bill);
+        //}
 
-        public void InsertCustomer(Customer customer)
+        public void insertCustomer(Customer customer)
         {
-            bool isUnique = IsCustomerUnique(customer);
+            bool isUnique = isCustomerUnique(customer);
             if (!isUnique)
             {
                 throw new InvalidDataException("A customer with that email already exists");
             }
-                _customerColl.InsertOne(customer);
+            _customerColl.InsertOne(customer);
         }
 
-        public bool IsCustomerUnique(Customer customer) 
+        public bool isCustomerUnique(Customer customer) 
         {
             bool isUnique = false;
-            Customer result = GetCustomer(customer.Email);
+            Customer result = getCustomerByEmail(customer.Email);
             if(result == null)
             {
                 isUnique = true;
@@ -53,39 +53,78 @@ namespace MyTrailerV2.Data
             return isUnique;
         }
 
-        public Customer GetCustomer(string email)
+        public Customer getCustomerByEmail(string email)
         {
             Customer customer = _customerColl.Find<Customer>(ele => ele.Email == email).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new InvalidDataException("No customer found with that email");
+            }
             return customer;
         }
 
-        public Rental GetRental(string email)
-        {
-            Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
-            return rental;
-        }
-
-        public Bill addBill(Rental rental)
-        {
-            Bill bill = new Bill(rental.Customer, rental);
-            _billColl.InsertOne(bill);
-            return bill;
-        }
-
-        //public void InsertTrailer(Trailer trailer)
+        //public Rental getRental(string email)
         //{
-        //    _trailerColl.InsertOne(trailer);
+        //    Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
+        //    return rental;
         //}
+
+        //public Bill addBill(Rental rental)
+        //{
+        //    Bill bill = new Bill(rental.Customer, rental);
+        //    _billColl.InsertOne(bill);
+        //    return bill;
+        //}
+
+        public void insertTrailer(Trailer trailer)
+        {
+            bool isUnique = isTrailerUnique(trailer);
+            if (!isUnique)
+            { 
+                throw new InvalidDataException("A trailer with that number already exists");
+            }
+            _trailerColl.InsertOne(trailer);
+        }
+
+        public bool isTrailerUnique(Trailer trailer)
+        {
+            bool isUnique = false;
+            Trailer result = getTrailerByNumber(trailer.TrailerNumber);
+            if (result == null)
+            {
+                isUnique= true;
+            }
+            return isUnique;
+        }
+
+        public Trailer getTrailerByNumber(int number)
+        {
+            Trailer trailer = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == number).FirstOrDefault();
+            if(trailer == null)
+            {
+                throw new InvalidDataException("No trailer found matching the number provided");
+            }
+            return trailer;
+        }
 
         //public List<Trailer> GetAllTrailers()
         //{
         //    return _trailerColl.Find<Trailer>(_ => true).ToList();
         //}
 
-        //public void InsertRental(Rental rental)
-        //{
-        //    _rentalColl.InsertOne(rental);
-        //}
+        public Rental getRentalByEmail(string email)
+        {
+            Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
+            return rental;
+        }
+
+        public void insertRental(RentalRequest rentalRequest)
+        {
+            Trailer trailer = getTrailerByNumber(rentalRequest.Trailernumber);
+            Customer customer = getCustomerByEmail(rentalRequest.Email);
+            Rental rental = new Rental(trailer, customer, DateTime.Now, rentalRequest.Rentaltype, rentalRequest.HasInsurance);
+            _rentalColl.InsertOne(rental);
+        }
 
         //public Trailer findTrailerByTrailerNumber(int trailerNumber)
         //{

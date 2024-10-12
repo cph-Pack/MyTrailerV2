@@ -9,25 +9,69 @@ namespace MyTrailerV2.Controllers
     {
         DBManager _dbManager = new DBManager();
 
-        //public void addTrailer()
-        //{
+        [HttpPost("trailer/add")]
+        public ActionResult<Trailer> addTrailer([FromBody] Trailer trailer)
+        {
+            try
+            {
+                _dbManager.insertTrailer(trailer);
+                Trailer result = _dbManager.getTrailerByNumber(trailer.TrailerNumber);
+                return Ok(result);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
 
-        //}
+        [HttpGet("trailer/{trailernumber}")]
+        public ActionResult<Trailer> getTrailer(int trailernumber)
+        {
+            try
+            {
+                Trailer trailer = _dbManager.getTrailerByNumber(trailernumber);
+                return Ok(trailer);
+            }
+            catch (InvalidDataException e)
+            {
+                return NotFound(e.Message);
+            }
+        }
 
         //public void getTrailers()
         //{
 
         //}
 
-        //public void addRental()
-        //{
+        [HttpPost("rental/add")]
+        public ActionResult addRental([FromBody] RentalRequest rentalRequest)
+        {
+            try
+            {
+                _dbManager.insertRental(rentalRequest);
+                return Ok();
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+            
+        }
 
-        //}
-
-        //public void getRental()
-        //{
-
-        //}
+        [HttpGet("rental/{email}")]
+        public ActionResult<Rental> getRental(string email)
+        {
+            try
+            {
+                Rental rental = _dbManager.getRentalByEmail(email);
+                return Ok(rental);
+            }
+            catch (InvalidDataException e)
+            {
+                return NotFound(e.Message);
+            }
+            
+        }
 
         //public void getBill()
         //{
@@ -39,23 +83,23 @@ namespace MyTrailerV2.Controllers
 
         //}
 
-        //public void endRentalCreateBill()
+        //[HttpPost("")]
+        //public ActionResult<Bill> endRentalCreateBill()
         //{
 
         //}
 
         [HttpPost("customer/add")]
-        public ActionResult<Customer> postCustomer([FromBody] Customer customer)
+        public ActionResult<Customer> addCustomer([FromBody] Customer customer)
         {
             try
             {
-                _dbManager.InsertCustomer(customer);
-                Customer result = _dbManager.GetCustomer(customer.Email);
+                _dbManager.insertCustomer(customer);
+                Customer result = _dbManager.getCustomerByEmail(customer.Email);
                 return Ok(result);
             }
             catch (InvalidDataException e)
             {
-
                 return BadRequest(e.Message);
             }
         }
@@ -65,16 +109,12 @@ namespace MyTrailerV2.Controllers
         {
             try
             {
-                Customer customer = _dbManager.GetCustomer(email);
-                if (customer == null)
-                {
-                    throw new InvalidDataException("No customer found with that email");
-                }
+                Customer customer = _dbManager.getCustomerByEmail(email);
                 return Ok(customer);
             }
             catch (InvalidDataException e)
             {
-                return BadRequest(e.Message);
+                return NotFound(e.Message);
             }
            
         }
