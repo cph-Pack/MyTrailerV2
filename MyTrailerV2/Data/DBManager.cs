@@ -14,6 +14,7 @@ namespace MyTrailerV2.Data
         private readonly IMongoCollection<Trailer> _trailerColl;
         private readonly IMongoCollection<Rental> _rentalColl;
         private readonly IMongoCollection<Bill> _billColl;
+        private readonly IMongoCollection<Customer> _customerColl;
 
         public DBManager()
         {
@@ -21,6 +22,7 @@ namespace MyTrailerV2.Data
             _database = _client.GetDatabase("SI");
 
             _trailerColl = _database.GetCollection<Trailer>("trailers");
+            _customerColl = _database.GetCollection<Customer>("customers");
             _rentalColl = _database.GetCollection<Rental>("rentals");
             _billColl = _database.GetCollection<Bill>("bills");
         }
@@ -28,6 +30,33 @@ namespace MyTrailerV2.Data
         public void insertBill(Bill bill)
         {
             _billColl.InsertOne(bill);
+        }
+
+        public void InsertCustomer(Customer customer)
+        {
+            bool isUnique = IsCustomerUnique(customer);
+            if (!isUnique)
+            {
+                throw new InvalidDataException("A customer with that email already exists");
+            }
+                _customerColl.InsertOne(customer);
+        }
+
+        public bool IsCustomerUnique(Customer customer) 
+        {
+            bool isUnique = false;
+            Customer result = GetCustomer(customer.Email);
+            if(result == null)
+            {
+                isUnique = true;
+            }
+            return isUnique;
+        }
+
+        public Customer GetCustomer(string email)
+        {
+            Customer customer = _customerColl.Find<Customer>(ele => ele.Email == email).FirstOrDefault();
+            return customer;
         }
 
         public Rental GetRental(string email)
