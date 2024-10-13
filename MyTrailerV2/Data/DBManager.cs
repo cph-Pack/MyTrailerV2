@@ -45,8 +45,8 @@ namespace MyTrailerV2.Data
         public bool isCustomerUnique(Customer customer) 
         {
             bool isUnique = false;
-            Customer result = getCustomerByEmail(customer.Email);
-            if(result == null)
+            Customer result = _customerColl.Find<Customer>(ele => ele.Email == customer.email).FirstOrDefault();
+            if (result == null)
             {
                 isUnique = true;
             }
