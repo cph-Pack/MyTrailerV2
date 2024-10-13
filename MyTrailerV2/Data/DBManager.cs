@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Xml.Linq;
 using MongoDB.Driver;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyTrailerV2.Data
 {
@@ -89,7 +90,7 @@ namespace MyTrailerV2.Data
         public bool isTrailerUnique(Trailer trailer)
         {
             bool isUnique = false;
-            Trailer result = getTrailerByNumber(trailer.TrailerNumber);
+            Trailer result = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == trailer.TrailerNumber).FirstOrDefault();
             if (result == null)
             {
                 isUnique= true;
