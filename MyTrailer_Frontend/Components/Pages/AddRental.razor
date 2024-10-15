@@ -1,0 +1,80 @@
+﻿@page "/addrental"
+@using System.Text.Json
+@using MyTrailer_Frontend.Data
+@rendermode InteractiveServer // DEN HER ER MEGET VIGTIG
+
+<h3>Tilføj Udlejning</h3>
+
+<EditForm Model="rentalRequest" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="trailerNumber">Trailer Nummer:</label>
+        <InputNumber id="trailerNumber" @bind-Value="rentalRequest.Trailernumber" />
+        <ValidationMessage For="@(() => rentalRequest.Trailernumber)" />
+    </div>
+
+    <div>
+        <label for="email">Kundens E-mail:</label>
+        <InputText id="email" @bind-Value="rentalRequest.Email" />
+        <ValidationMessage For="@(() => rentalRequest.Email)" />
+    </div>
+
+    <div>
+        <label for="hasInsurance">Har Forsikring?</label>
+        <InputCheckbox id="hasInsurance" @bind-Value="rentalRequest.HasInsurance" />
+    </div>
+
+    <div>
+        <label for="rentalType">Udlejningstype:</label>
+        <InputSelect id="rentalType" @bind-Value="rentalRequest.Rentaltype">
+            <option value="">-- Vælg Udlejningstype --</option>
+            <option value="ShortTerm">Korttidsudlejning</option>
+            <option value="LongTerm">Langtidsudlejning</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => rentalRequest.Rentaltype)" />
+    </div>
+
+    <button type="submit">Tilføj Udlejning</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p>@successMessage</p>
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red;">@errorMessage</p>
+}
+
+@code {
+    private RentalRequest rentalRequest = new RentalRequest(0, string.Empty, false, RentalType.ShortTerm);
+    private string successMessage;
+    private string errorMessage;
+
+    // Opret en lokal HttpClient instans denne kan instantieres i program.cs hvis vi bruger den på flere sider (som nu f.eks.)
+    private HttpClient httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("https://localhost:7025/") // Brug din API-base URL
+        };
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Console.WriteLine("Test om vi får fat på det rigtige link");
+            var response = await httpClient.PostAsJsonAsync("MyTrailer/rental/add", rentalRequest);
+            Console.WriteLine("API får fat på rigtige link :)");
+            response.EnsureSuccessStatusCode();
+            successMessage = "Udlejningen blev tilføjet succesfuldt!";
+            errorMessage = null;
+            rentalRequest = new RentalRequest(0, string.Empty, false, RentalType.ShortTerm); // Reset form
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Der opstod en fejl: {ex.Message}";
+            successMessage = null;
+        }
+    }
+}

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTrailerV2", "MyTrailerV2\MyTrailerV2.csproj", "{15A2CC21-742E-4E67-932F-A0F6DAB501A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTrailerV2", "MyTrailerV2\MyTrailerV2.csproj", "{15A2CC21-742E-4E67-932F-A0F6DAB501A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTrailer_Frontend", "MyTrailer_Frontend\MyTrailer_Frontend.csproj", "{57239B3E-553A-460B-9137-5FB28B70C9F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTrailer_Frontend", "MyTrailer_Frontend\MyTrailer_Frontend.csproj", "{57239B3E-553A-460B-9137-5FB28B70C9F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
