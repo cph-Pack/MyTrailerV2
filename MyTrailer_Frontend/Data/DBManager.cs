@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using MongoDB.Driver;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace MyTrailerV2.Data
+namespace MyTrailer_Frontend.Data
 {
     public class DBManager
     {

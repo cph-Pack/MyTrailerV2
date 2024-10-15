@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
-namespace MyTrailerV2.Data
+namespace MyTrailer_Frontend.Data
 {
     public class Customer
     {
