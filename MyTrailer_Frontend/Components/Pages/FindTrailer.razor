@@ -1,0 +1,81 @@
+﻿@page "/findtrailers"
+@using System.Text.Json
+@using MyTrailer_Frontend.Data
+@rendermode InteractiveServer // DEN HER ER MEGET VIGTIG
+
+<h3>Find A Trailer</h3>
+<br />
+
+<input @bind="trailerNumberInput" placeholder="Indtast trailer nummer" />
+<button @onclick="FindTrailer">Find Trailer</button>
+@* <button class="btn btn-primary" @onclick="getTrailer">Click me for JSON</button> *@
+
+@if (foundTrailerNumber != 0) // Antager, at 0 ikke er et gyldigt nummer
+{
+    <div>
+        <h4>Fundet Trailer:</h4>
+        <p>Trailer Nummer: @foundTrailerNumber</p>
+        <p>Er tilgængelig: @(foundIsAvailable ? "Ja" : "Nej")</p>
+
+        @if (foundRentedUntil.HasValue) // Tjekker om der er en udlejningsdato
+        {
+            <p>Udlejet til: @foundRentedUntil.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
+        }
+        else
+        {
+            <p>Udlejet til: Ikke udlejet</p>; // Viser kun "Ikke udlejet" hvis RentedUntil er null
+        }
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p>@errorMessage</p>
+}
+
+@code {
+    // Det lader til at en button skal have @ foran sit onclick for at virke ordentligt.
+    private int trailerNumberInput;
+    private string errorMessage;
+    private Trailer foundTrailer;
+    private int foundTrailerNumber; // Til at gemme trailer nummeret
+    private bool foundIsAvailable; // Til at gemme tilgængeligheden
+    private DateTime? foundRentedUntil; // Til at gemme udlejningsdatoen
+
+    HttpClient httpClient = new()
+        {
+            BaseAddress = new Uri("https://localhost:7260"),
+        };
+
+    private async Task FindTrailer()
+    {
+        Trailer trailer = new Trailer(trailerNumberInput); // Opret et trailer objekt
+        await getTrailer(trailer); // Kald metoden for at hente trailer
+    }
+
+    private async Task getTrailer(Trailer trailer)
+    {
+        HttpResponseMessage response = await httpClient.GetAsync($"https://localhost:7025/MyTrailer/trailer/{trailer.TrailerNumber}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            string json = await response.Content.ReadAsStringAsync();
+
+            // Deserialiserer til JsonElement
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(json, options);
+
+            // Hent de specifikke værdier
+            foundTrailerNumber = jsonElement.GetProperty("trailerNumber").GetInt32();
+            foundIsAvailable = jsonElement.GetProperty("isAvailable").GetBoolean();
+            foundRentedUntil = jsonElement.GetProperty("rentedUntil").GetDateTime(); // Dette kan være null, så husk at håndtere det
+            errorMessage = null; // Nulstil fejlbeskeden, hvis alt gik godt
+        }
+        else
+        {
+            errorMessage = $"Kunne ikke finde trailer med nummer {trailer.TrailerNumber}.";
+        }
+
+        StateHasChanged(); // Opdater UI
+    }
+
+}  
