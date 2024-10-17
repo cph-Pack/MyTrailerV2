@@ -14,7 +14,7 @@ namespace MyTrailerV2.Data
         public bool HasInsurance { get; set; }
         public bool IsActive { get; set; } = true;
 
-        public Rental(Trailer trailer, Customer customer, DateTime startTime, RentalType rentalType, bool hasInsurance, bool IsActive)
+        public Rental(Trailer trailer, Customer customer, DateTime startTime, RentalType rentalType, bool hasInsurance)
         {
 
             this.Trailer = trailer;
@@ -22,7 +22,6 @@ namespace MyTrailerV2.Data
             this.StartTime = startTime;
             this.RentalType = rentalType;
             this.HasInsurance = hasInsurance;
-            this.IsActive = IsActive;
         }
 
     }

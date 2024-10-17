@@ -113,9 +113,9 @@ namespace MyTrailerV2.Data
         //    return _trailerColl.Find<Trailer>(_ => true).ToList();
         //}
 
-        public Rental getRentalByEmail(string email)
+        public List<Rental> getRentalByEmail(string email)
         {
-            Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
+            List<Rental> rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email && ele.IsActive == true).ToList();
             return rental;
         }
 

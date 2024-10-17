@@ -59,11 +59,11 @@ namespace MyTrailerV2.Controllers
         }
 
         [HttpGet("rental/{email}")]
-        public ActionResult<Rental> getRental(string email)
+        public ActionResult<List<Rental>> getRental(string email)
         {
             try
             {
-                Rental rental = _dbManager.getRentalByEmail(email);
+                List<Rental> rental = _dbManager.getRentalByEmail(email);
                 return Ok(rental);
             }
             catch (InvalidDataException e)
