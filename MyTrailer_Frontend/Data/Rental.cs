@@ -12,6 +12,7 @@ namespace MyTrailer_Frontend.Data
         public DateTime StartTime { get; set; }
         public RentalType RentalType { get; set; }
         public bool HasInsurance { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public Rental(Trailer trailer, Customer customer, DateTime startTime, RentalType rentalType, bool hasInsurance)
         {
