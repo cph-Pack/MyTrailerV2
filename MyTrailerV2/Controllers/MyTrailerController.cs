@@ -38,11 +38,6 @@ namespace MyTrailerV2.Controllers
             }
         }
 
-        //public void getTrailers()
-        //{
-
-        //}
-
         [HttpPost("rental/add")]
         public ActionResult addRental([FromBody] RentalRequest rentalRequest)
         {
@@ -91,27 +86,49 @@ namespace MyTrailerV2.Controllers
         }
 
         [HttpPost("bill")]
-        public ActionResult<Bill> addBill([FromBody] Rental rental)
+        public ActionResult<Bill> endRentalCreateBill([FromBody] Rental rental)
         {
-            Bill bill = _dbManager.addBill(rental);
-            return Ok(bill);
+            try
+            {
+                Bill bill = _dbManager.addBill(rental);
+                return Ok(bill);
+
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
-        //public void getBill()
-        //{
+        [HttpGet("bills/{email}")]
+        public ActionResult<List<Bill>> getBillsByEmail(string email)
+        {
+            try
+            {
+                List<Bill> bills = _dbManager.getAllBillsByEmail(email);
+                return Ok(bills);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+            
+        }
 
-        //}
+        [HttpGet("bill/{rentalId}")]
+        public ActionResult<Bill> getBillByRentalId(string rentalId)
+        {
+            try
+            {
+                Bill bill = _dbManager.getBillByRentalId(rentalId);
+                return Ok(bill);
 
-        //public void addBill()
-        //{
-
-        //}
-
-        //[HttpPost("")]
-        //public ActionResult<Bill> endRentalCreateBill()
-        //{
-
-        //}
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
 
         [HttpPost("customer/add")]
         public ActionResult<Customer> addCustomer([FromBody] Customer customer)

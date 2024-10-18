@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static MongoDB.Driver.WriteConcern;
 
 namespace MyTrailerV2.Data
 {
@@ -61,12 +62,6 @@ namespace MyTrailerV2.Data
             return customer;
         }
 
-        //public Rental getRental(string email)
-        //{
-        //    Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
-        //    return rental;
-        //}
-
         public Bill addBill(Rental rental)
         {
             Bill bill = new Bill(rental.Customer, rental);
@@ -76,42 +71,41 @@ namespace MyTrailerV2.Data
                 bill.TotalAmount += 50;
             }
 
-            var a = rental.StartTime;
-            var b = DateTime.Now;
+            var rented = rental.StartTime;
+            var rentEnd = DateTime.Now;
 
-
-            double dif = (a.Date - b.Date).TotalDays;
+            double dif = (rented.Date - rentEnd.Date).TotalDays;
             if(dif < 0)
             {
                 bill.TotalAmount += 50;
             }
 
-
-            /*
-             * 
-             * {
-  "rentalId": "6710cef6a129f459a18e5dc6",
-  "trailer": {
-    "trailerNumber": 1,
-    "isAvailable": true,
-    "rentedUntil": "2024-10-17T23:35:05.478Z"
-  },
-  "customer": {
-    "firstName": "string",
-    "lastName": "string",
-    "email": "string"
-  },
-  "startTime": "2024-10-17T23:35:05.478Z",
-  "rentalType": 0,
-  "hasInsurance": true,
-  "isActive": true
-}
-             * 
-             * 
-             * */
-
             _billColl.InsertOne(bill);
+            makeTrailerAvailable(rental.Trailer.TrailerNumber);
+            makeRentalInactive(rental.RentalId);
             return bill;
+
+            /* Example of a valid object to put into swagger. 
+             * Removed all the crap that comes with swagger and mongodb
+              
+              {
+                  "rentalId": "6710cef6a129f459a18e5dc6",
+                  "trailer": {
+                    "trailerNumber": 1,
+                    "isAvailable": true,
+                    "rentedUntil": "2024-10-17T23:35:05.478Z"
+                  },
+                  "customer": {
+                    "firstName": "string",
+                    "lastName": "string",
+                    "email": "string"
+                  },
+                  "startTime": "2024-10-17T23:35:05.478Z",
+                  "rentalType": 0,
+                  "hasInsurance": true,
+                  "isActive": true
+               }
+             */
         }
 
         public void insertTrailer(Trailer trailer)
@@ -177,6 +171,38 @@ namespace MyTrailerV2.Data
             return rental;
         }
 
+        public void makeTrailerAvailable(int trailerNumber)
+        {
+            var filter = Builders<Trailer>.Filter.Eq(ele => ele.TrailerNumber, trailerNumber);
+            var update = Builders<Trailer>.Update.Set(ele => ele.IsAvailable, true);
+            _trailerColl.UpdateOne(filter, update);
+        }
+
+        public List<Bill> getAllBillsByEmail(string email)
+        {
+            List<Bill> bills = _billColl.Find(ele => ele.Customer.Email == email).ToList();
+            if(bills.Count == 0)
+            {
+                throw new InvalidDataException("No bills found matching this email");
+            }
+            return bills;
+        }
+
+        public void makeRentalInactive(string rentalId)
+        {
+            var filter = Builders<Rental>.Filter.Eq(ele => ele.RentalId, rentalId);
+            var update = Builders<Rental>.Update.Set(ele => ele.IsActive, false);
+        }
+
+        public Bill getBillByRentalId(string rentalId)
+        {
+            Bill bill = _billColl.Find(ele => ele.RentaldId == rentalId).FirstOrDefault();
+            if(bill == null)
+            {
+                throw new InvalidDataException("No bill found with that rentalId");
+            }
+            return bill;
+        }
 
     }
 }
