@@ -43,7 +43,7 @@ namespace MyTrailer_Frontend.Data
             _customerColl.InsertOne(customer);
         }
 
-        public bool isCustomerUnique(Customer customer) 
+        public bool isCustomerUnique(Customer customer)
         {
             bool isUnique = false;
             Customer result = _customerColl.Find<Customer>(ele => ele.Email == customer.Email).FirstOrDefault();
@@ -81,7 +81,7 @@ namespace MyTrailer_Frontend.Data
         {
             bool isUnique = isTrailerUnique(trailer);
             if (!isUnique)
-            { 
+            {
                 throw new InvalidDataException("A trailer with that number already exists");
             }
             _trailerColl.InsertOne(trailer);
@@ -93,7 +93,7 @@ namespace MyTrailer_Frontend.Data
             Trailer result = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == trailer.TrailerNumber).FirstOrDefault();
             if (result == null)
             {
-                isUnique= true;
+                isUnique = true;
             }
             return isUnique;
         }
@@ -101,7 +101,7 @@ namespace MyTrailer_Frontend.Data
         public Trailer getTrailerByNumber(int number)
         {
             Trailer trailer = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == number).FirstOrDefault();
-            if(trailer == null)
+            if (trailer == null)
             {
                 throw new InvalidDataException("No trailer found matching the number provided");
             }
@@ -113,9 +113,9 @@ namespace MyTrailer_Frontend.Data
         //    return _trailerColl.Find<Trailer>(_ => true).ToList();
         //}
 
-        public Rental getRentalByEmail(string email)
+        public List<Rental> getRentalByEmail(string email)
         {
-            Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
+            List<Rental> rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email && ele.IsActive == true).ToList();
             return rental;
         }
 
