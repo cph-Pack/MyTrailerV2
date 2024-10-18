@@ -21,10 +21,14 @@
                 <p>Lejeaftaletype: @rental.RentalType</p>
                 <p>Forsikring: @(rental.HasInsurance ? "Ja" : "Nej")</p>
                 <p>Status: @(rental.IsActive ? "Aktiv" : "Inaktiv")</p>
+                @* <input @bind="trailerNumber" placeholder="Indtast trailer nummer" />
+                <button @onclick="ReturnTrailer">Return Trailer</button> *@
+                <input @bind="rentalId" placeholder="Indtast lejeaftalens ID" />
+                <button @onclick="EndRental">Afslut Lejeaftale</button>
 
                 @if (rental.IsActive)
                 {
-                    <button @onclick="@(() => DeactivateRental(rental.Trailer.TrailerNumber))">Afslut Lejeaftale</button>
+                    <button @onclick="@(() => MakeRentalInactive(rental.Trailer.TrailerNumber))">Afslut Lejeaftale</button>
                 }
 
                 <hr />
@@ -42,6 +46,9 @@ else
 }
 
 @code {
+    private string rentalId;
+    private string successMessage;
+    private int trailerNumber;
     private string emailInput; // Input til e-mailen fra brugeren
     private List<Rental> foundRentals; // Liste over fundne lejeaftaler
     private string errorMessage; // Besked til at vise fejl
@@ -81,10 +88,10 @@ else
     }
 
     // Metode til at deaktivere en lejeaftale ved at ændre IsActive til false
-    private async Task DeactivateRental(int trailerNumber)
+    private async Task MakeRentalInactive(int trailerNumber)
     {
         Console.WriteLine($"Trailer number {trailerNumber} was not found");
-        HttpResponseMessage response = await httpClient.PostAsync($"MyTrailer/rental/{trailerNumber}", null);
+        HttpResponseMessage response = await httpClient.PostAsync($"MyTrailer/rental/id/{trailerNumber}", null);
         Console.WriteLine($"Trailer number {trailerNumber} was found");
         if (response.IsSuccessStatusCode)
         {
@@ -97,5 +104,45 @@ else
         }
 
         StateHasChanged(); // Opdaterer UI
+    }
+
+    private async Task EndRental()
+    {
+        try
+        {
+            // Først hent lejeaftalen med det angivne ID
+            HttpResponseMessage response = await httpClient.GetAsync($"MyTrailer/rental/id/{rentalId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var rental = await response.Content.ReadFromJsonAsync<Rental>();
+
+                // Opdater lejeaftalen til ikke at være aktiv
+                rental.IsActive = false;
+
+                // Send en POST-anmodning for at afslutte lejeaftalen og generere en faktura
+                var billResponse = await httpClient.PostAsJsonAsync($"MyTrailer/bill", rental);
+
+                if (billResponse.IsSuccessStatusCode)
+                {
+                    successMessage = "Lejeaftale afsluttet, og faktura er genereret.";
+                    errorMessage = null;
+                }
+                else
+                {
+                    errorMessage = "Kunne ikke generere faktura.";
+                    successMessage = null;
+                }
+            }
+            else
+            {
+                errorMessage = "Kunne ikke finde lejeaftale med det angivne ID.";
+                successMessage = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Der opstod en fejl: {ex.Message}";
+            successMessage = null;
+        }
     }
 }
