@@ -58,12 +58,12 @@ namespace MyTrailerV2.Controllers
             
         }
 
-        [HttpGet("rental/{email}")]
-        public ActionResult<List<Rental>> getRental(string email)
+        [HttpGet("rentals/email/{email}")]
+        public ActionResult<List<Rental>> getActiveRentalsByEmail(string email)
         {
             try
             {
-                List<Rental> rental = _dbManager.getRentalByEmail(email);
+                List<Rental> rental = _dbManager.getActiveRentalsByEmail(email);
                 return Ok(rental);
             }
             catch (InvalidDataException e)
@@ -71,6 +71,30 @@ namespace MyTrailerV2.Controllers
                 return NotFound(e.Message);
             }
             
+        }
+
+        [HttpGet("rental/id/{rentalId}")]
+        public ActionResult<Rental> getRentalById(string rentalId)
+        {
+            try
+            {
+                Rental rental = _dbManager.getRentalById(rentalId);
+                return Ok(rental);
+
+            }
+            catch (InvalidDataException e)
+            {
+                return NotFound(e.Message);
+            }
+            
+
+        }
+
+        [HttpPost("bill")]
+        public ActionResult<Bill> addBill([FromBody] Rental rental)
+        {
+            Bill bill = _dbManager.addBill(rental);
+            return Ok(bill);
         }
 
         //public void getBill()

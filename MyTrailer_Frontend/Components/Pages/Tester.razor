@@ -1,5 +1,6 @@
 ﻿@page "/testing"
 @using System.Text.Json  
+@using MyTrailer_Frontend.Data
 @rendermode InteractiveServer // DEN HER ER MEGET VIGTIG
 
 <h3>Tester</h3>
@@ -33,7 +34,7 @@
 
     private async void getTrailer()
     {
-        using HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7025/MyTrailer/trailer/1");
+        using HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7025/MyTrailer/rental/test");
         string json = await response.Content.ReadAsStringAsync();
 
         // gør json string lidt pænere at kigge på
@@ -43,7 +44,6 @@
             };
 
         var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
-
         msg = JsonSerializer.Serialize(jsonElement, options);
         
         StateHasChanged(); // tvinger component, altså hele Tester.razor, til at opdatere
