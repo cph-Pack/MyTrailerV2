@@ -7,6 +7,7 @@ namespace MyTrailer_Frontend.Data
     {
         [BsonId]
         public ObjectId Id { get; set; }
+        public string RentalId { get; set; } = string.Empty;
         public Trailer Trailer { get; set; }
         public Customer Customer { get; set; }
         public DateTime StartTime { get; set; }
