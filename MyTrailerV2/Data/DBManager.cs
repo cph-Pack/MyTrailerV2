@@ -62,7 +62,7 @@ namespace MyTrailerV2.Data
             return customer;
         }
 
-        public Bill addBill(Rental rental)
+        public Bill insertBill(Rental rental)
         {
             Bill bill = new Bill(rental.Customer, rental);
             bill.RentaldId = rental.RentalId;

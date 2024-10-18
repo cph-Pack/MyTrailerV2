@@ -90,7 +90,7 @@ namespace MyTrailerV2.Controllers
         {
             try
             {
-                Bill bill = _dbManager.addBill(rental);
+                Bill bill = _dbManager.insertBill(rental);
                 return Ok(bill);
 
             }
