@@ -192,6 +192,7 @@ namespace MyTrailerV2.Data
         {
             var filter = Builders<Rental>.Filter.Eq(ele => ele.RentalId, rentalId);
             var update = Builders<Rental>.Update.Set(ele => ele.IsActive, false);
+            _rentalColl.UpdateOne(filter, update);
         }
 
         public Bill getBillByRentalId(string rentalId)
