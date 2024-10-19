@@ -155,7 +155,19 @@ namespace MyTrailerV2.Data
             Trailer trailer = getTrailerByNumber(rentalRequest.Trailernumber);
             Customer customer = getCustomerByEmail(rentalRequest.Email);
             Rental rental = new Rental(trailer, customer, DateTime.Now, rentalRequest.Rentaltype, rentalRequest.HasInsurance);
+            rental.RentalId = "abc";
             _rentalColl.InsertOne(rental);
+            fixRentalId();
+        }
+
+        // this is a janky workaround for something I cannot figure out how else to fix in mongodb
+        public void fixRentalId()
+        {
+            Rental rental = _rentalColl.Find<Rental>( ele => ele.RentalId == "abc" ).FirstOrDefault();
+            rental.RentalId = rental.Id.ToString();
+            var filter = Builders<Rental>.Filter.Eq(ele => ele.RentalId, "abc");
+            var update = Builders<Rental>.Update.Set(ele => ele.RentalId, rental.RentalId);
+            _rentalColl.UpdateOne(filter, update);
         }
 
         public Rental getRentalById(string id)
