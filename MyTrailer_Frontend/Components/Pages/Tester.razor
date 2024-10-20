@@ -1,0 +1,52 @@
+﻿@page "/testing"
+@using System.Text.Json  
+@using MyTrailer_Frontend.Data
+@rendermode InteractiveServer // DEN HER ER MEGET VIGTIG
+
+<h3>Tester</h3>
+<p>@msg</p>
+<br />
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="getTrailer">Click me for JSON</button>
+<button class="btn btn-primary" @onclick="Farvel">Click me for Farvel</button>
+
+@code {
+    // Det lader til at en button skal have @ foran sit onclick for at virke ordentligt. 
+    private int currentCount = 0;
+    private string msg = "Hejsa";
+
+    HttpClient httpClient = new()
+        {
+            BaseAddress = new Uri("https://localhost:7260"),
+        };
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void Farvel()
+    {
+        msg = "farvel";
+    }
+
+    private async void getTrailer()
+    {
+        using HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7025/MyTrailer/rental/test");
+        string json = await response.Content.ReadAsStringAsync();
+
+        // gør json string lidt pænere at kigge på
+        var options = new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            };
+
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+        msg = JsonSerializer.Serialize(jsonElement, options);
+        
+        StateHasChanged(); // tvinger component, altså hele Tester.razor, til at opdatere
+    }
+
+}   

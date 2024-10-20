@@ -1,0 +1,157 @@
+﻿@page "/returntrailer"
+@using System.Text.Json
+@using MyTrailer_Frontend.Data
+@rendermode InteractiveServer // DEN HER ER MEGET VIGTIG
+
+<h3>Find Lejeaftaler</h3>
+<br />
+
+<input @bind="emailInput" placeholder="Indtast kundens e-mail" />
+<button @onclick="FindRentals">Find Lejeaftaler</button>
+
+@if (foundRentals != null && foundRentals.Count > 0)
+{
+    <div>
+        <h4>Fundne Lejeaftaler:</h4>
+        @foreach (var rental in foundRentals)
+        {
+            <div>
+                <p>Trailer Nummer: @rental.Trailer.TrailerNumber</p>
+                <p>Starttidspunkt: @rental.StartTime.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                <p>Lejeaftaletype: @rental.RentalType</p>
+                <p>LejeID: @rental.RentalId</p>
+                <p>Forsikring: @(rental.HasInsurance ? "Ja" : "Nej")</p>
+                <p>Status: @(rental.IsActive ? "Aktiv" : "Inaktiv")</p>
+                <button @onclick="(()=>endRental2(rental))">Afslut Lejeaftale</button>
+                <hr />
+            </div>
+        }
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p>@errorMessage</p>
+}
+else
+{
+    <p>Ingen lejeaftaler fundet.</p>
+}
+
+@code {
+    private string rentalId;
+    private string successMessage;
+    private int trailerNumber;
+    private string emailInput; // Input til e-mailen fra brugeren
+    private List<Rental> foundRentals; // Liste over fundne lejeaftaler
+    private string errorMessage; // Besked til at vise fejl
+
+    HttpClient httpClient = new()
+        {
+            BaseAddress = new Uri("https://localhost:7025/"), // Husk at opdatere URL'en til din API-baseadresse
+        };
+
+    // Metode til at finde lejeaftaler baseret på e-mail
+    private async Task FindRentals()
+    {
+        if (string.IsNullOrEmpty(emailInput))
+        {
+            errorMessage = "E-mail skal udfyldes!";
+            foundRentals = null;
+            return;
+        }
+
+        HttpResponseMessage response = await httpClient.GetAsync($"MyTrailer/rentals/email/{emailInput}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            string json = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            foundRentals = JsonSerializer.Deserialize<List<Rental>>(json, options);
+            errorMessage = null;
+        }
+        else
+        {
+            errorMessage = $"Kunne ikke finde lejeaftaler for e-mail: {emailInput}.";
+            foundRentals = null;
+        }
+
+        StateHasChanged(); // Opdaterer UI
+    }
+
+    // Metode til at deaktivere en lejeaftale ved at ændre IsActive til false
+    // private async Task MakeRentalInactive(int trailerNumber)
+    // {
+    //     Console.WriteLine($"Trailer number {trailerNumber} was not found");
+    //     HttpResponseMessage response = await httpClient.PostAsync($"MyTrailer/rental/id/{trailerNumber}", null);
+    //     Console.WriteLine($"Trailer number {trailerNumber} was found");
+    //     if (response.IsSuccessStatusCode)
+    //     {
+    //         Opdater listen over lejeaftaler
+    //         await FindRentals();
+    //     }
+    //     else
+    //     {
+    //         errorMessage = "Kunne ikke afslutte lejeaftale.";
+    //     }
+
+    //     StateHasChanged(); Opdaterer UI
+    // }
+
+    // private async Task EndRental()
+    // {
+    //     try
+    //     {
+    //         Først hent lejeaftalen med det angivne ID
+    //         HttpResponseMessage response = await httpClient.GetAsync($"MyTrailer/rental/id/{rentalId}");
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //             var rental = await response.Content.ReadFromJsonAsync<Rental>();
+
+    //             Opdater lejeaftalen til ikke at være aktiv
+    //             rental.IsActive = false;
+
+    //             Send en POST-anmodning for at afslutte lejeaftalen og generere en faktura
+    //             var billResponse = await httpClient.PostAsJsonAsync($"MyTrailer/bill", rental);
+
+    //             if (billResponse.IsSuccessStatusCode)
+    //             {
+    //                 successMessage = "Lejeaftale afsluttet, og faktura er genereret.";
+    //                 errorMessage = null;
+    //             }
+    //             else
+    //             {
+    //                 errorMessage = "Kunne ikke generere faktura.";
+    //                 successMessage = null;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             errorMessage = "Kunne ikke finde lejeaftale med det angivne ID.";
+    //             successMessage = null;
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         errorMessage = $"Der opstod en fejl: {ex.Message}";
+    //         successMessage = null;
+    //     }
+    // }
+
+    private async Task endRental2(Rental rental)
+    {
+        try
+        {
+
+            HttpResponseMessage response = await httpClient.PostAsJsonAsync($"MyTrailer/bill", rental);
+        }
+        catch (Exception)
+        {
+
+            Console.WriteLine("Something went wrong");
+        }
+        
+    }
+
+
+}

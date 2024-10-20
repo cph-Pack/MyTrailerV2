@@ -1,6 +1,7 @@
 ﻿using System.Formats.Asn1;
 using System.Net.Sockets;
 using System.Xml.Linq;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -28,11 +29,6 @@ namespace MyTrailer_Frontend.Data
             _billColl = _database.GetCollection<Bill>("bills");
         }
 
-        //public void insertBill(Bill bill)
-        //{
-        //    _billColl.InsertOne(bill);
-        //}
-
         public void insertCustomer(Customer customer)
         {
             bool isUnique = isCustomerUnique(customer);
@@ -43,7 +39,7 @@ namespace MyTrailer_Frontend.Data
             _customerColl.InsertOne(customer);
         }
 
-        public bool isCustomerUnique(Customer customer) 
+        public bool isCustomerUnique(Customer customer)
         {
             bool isUnique = false;
             Customer result = _customerColl.Find<Customer>(ele => ele.Email == customer.Email).FirstOrDefault();
@@ -70,18 +66,58 @@ namespace MyTrailer_Frontend.Data
         //    return rental;
         //}
 
-        //public Bill addBill(Rental rental)
-        //{
-        //    Bill bill = new Bill(rental.Customer, rental);
-        //    _billColl.InsertOne(bill);
-        //    return bill;
-        //}
+        public Bill addBill(Rental rental)
+        {
+            Bill bill = new Bill(rental.Customer, rental);
+            bill.RentaldId = rental.RentalId;
+            if (rental.HasInsurance)
+            {
+                bill.TotalAmount += 50;
+            }
+
+            var a = rental.StartTime;
+            var b = DateTime.Now;
+
+
+            double dif = (a.Date - b.Date).TotalDays;
+            if (dif < 0)
+            {
+                bill.TotalAmount += 50;
+            }
+
+
+            /*
+             * 
+             * {
+  "rentalId": "6710cef6a129f459a18e5dc6",
+  "trailer": {
+    "trailerNumber": 1,
+    "isAvailable": true,
+    "rentedUntil": "2024-10-17T23:35:05.478Z"
+  },
+  "customer": {
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string"
+  },
+  "startTime": "2024-10-17T23:35:05.478Z",
+  "rentalType": 0,
+  "hasInsurance": true,
+  "isActive": true
+}
+             * 
+             * 
+             * */
+
+            _billColl.InsertOne(bill);
+            return bill;
+        }
 
         public void insertTrailer(Trailer trailer)
         {
             bool isUnique = isTrailerUnique(trailer);
             if (!isUnique)
-            { 
+            {
                 throw new InvalidDataException("A trailer with that number already exists");
             }
             _trailerColl.InsertOne(trailer);
@@ -93,7 +129,7 @@ namespace MyTrailer_Frontend.Data
             Trailer result = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == trailer.TrailerNumber).FirstOrDefault();
             if (result == null)
             {
-                isUnique= true;
+                isUnique = true;
             }
             return isUnique;
         }
@@ -101,22 +137,22 @@ namespace MyTrailer_Frontend.Data
         public Trailer getTrailerByNumber(int number)
         {
             Trailer trailer = _trailerColl.Find<Trailer>(ele => ele.TrailerNumber == number).FirstOrDefault();
-            if(trailer == null)
+            if (trailer == null)
             {
                 throw new InvalidDataException("No trailer found matching the number provided");
             }
             return trailer;
         }
 
-        //public List<Trailer> GetAllTrailers()
-        //{
-        //    return _trailerColl.Find<Trailer>(_ => true).ToList();
-        //}
 
-        public Rental getRentalByEmail(string email)
+        public List<Rental> getActiveRentalsByEmail(string email)
         {
-            Rental rental = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email).FirstOrDefault();
-            return rental;
+            List<Rental> rentals = _rentalColl.Find<Rental>(ele => ele.Customer.Email == email && ele.IsActive == true).ToList();
+            foreach (var rental in rentals)
+            {
+                rental.RentalId = rental.Id.ToString();
+            }
+            return rentals;
         }
 
         public void insertRental(RentalRequest rentalRequest)
@@ -127,10 +163,20 @@ namespace MyTrailer_Frontend.Data
             _rentalColl.InsertOne(rental);
         }
 
-        //public Trailer findTrailerByTrailerNumber(int trailerNumber)
-        //{
-        //    return _trailerColl.Find<Trailer>(t => t.TrailerNumber == trailerNumber).FirstOrDefault();
-        //}
+        public Rental getRentalById(string id)
+        {
+            var objectId = new ObjectId(id);
+            var filter = Builders<Rental>.Filter.Eq(r => r.Id, objectId);
+            Rental rental = _rentalColl.Find<Rental>(filter).FirstOrDefault();
+            if (rental == null)
+            {
+                throw new InvalidDataException("Could not find a rental with that id");
+            }
+            rental.RentalId = rental.Id.ToString();
+            return rental;
+        }
+
+
     }
 }
 

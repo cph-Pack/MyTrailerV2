@@ -38,11 +38,6 @@ namespace MyTrailerV2.Controllers
             }
         }
 
-        //public void getTrailers()
-        //{
-
-        //}
-
         [HttpPost("rental/add")]
         public ActionResult addRental([FromBody] RentalRequest rentalRequest)
         {
@@ -58,12 +53,12 @@ namespace MyTrailerV2.Controllers
             
         }
 
-        [HttpGet("rental/{email}")]
-        public ActionResult<Rental> getRental(string email)
+        [HttpGet("rentals/email/{email}")]
+        public ActionResult<List<Rental>> getActiveRentalsByEmail(string email)
         {
             try
             {
-                Rental rental = _dbManager.getRentalByEmail(email);
+                List<Rental> rental = _dbManager.getActiveRentalsByEmail(email);
                 return Ok(rental);
             }
             catch (InvalidDataException e)
@@ -73,21 +68,67 @@ namespace MyTrailerV2.Controllers
             
         }
 
-        //public void getBill()
-        //{
+        [HttpGet("rental/id/{rentalId}")]
+        public ActionResult<Rental> getRentalById(string rentalId)
+        {
+            try
+            {
+                Rental rental = _dbManager.getRentalById(rentalId);
+                return Ok(rental);
 
-        //}
+            }
+            catch (InvalidDataException e)
+            {
+                return NotFound(e.Message);
+            }
+            
 
-        //public void addBill()
-        //{
+        }
 
-        //}
+        [HttpPost("bill")]
+        public ActionResult<Bill> endRentalCreateBill([FromBody] Rental rental)
+        {
+            try
+            {
+                Bill bill = _dbManager.insertBill(rental);
+                return Ok(bill);
 
-        //[HttpPost("")]
-        //public ActionResult<Bill> endRentalCreateBill()
-        //{
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
 
-        //}
+        [HttpGet("bills/{email}")]
+        public ActionResult<List<Bill>> getBillsByEmail(string email)
+        {
+            try
+            {
+                List<Bill> bills = _dbManager.getAllBillsByEmail(email);
+                return Ok(bills);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+            
+        }
+
+        [HttpGet("bill/{rentalId}")]
+        public ActionResult<Bill> getBillByRentalId(string rentalId)
+        {
+            try
+            {
+                Bill bill = _dbManager.getBillByRentalId(rentalId);
+                return Ok(bill);
+
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
 
         [HttpPost("customer/add")]
         public ActionResult<Customer> addCustomer([FromBody] Customer customer)
