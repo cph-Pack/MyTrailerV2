@@ -155,7 +155,7 @@ namespace MyTrailerV2.Data
             Trailer trailer = getTrailerByNumber(rentalRequest.Trailernumber);
             Customer customer = getCustomerByEmail(rentalRequest.Email);
             Rental rental = new Rental(trailer, customer, DateTime.Now, rentalRequest.Rentaltype, rentalRequest.HasInsurance);
-            rental.RentalId = "abc"; // It is changed right after insertion. Janky mongodb is janky
+            rental.RentalId = "abc"; // This value is changed right after insertion. Janky mongodb is janky
             _rentalColl.InsertOne(rental);
             fixRentalId();
         }
